@@ -6,6 +6,14 @@
   box-sizing: border-box;
 }
 
+:root {
+  --black: #000000;
+  --white: #ffffff;
+  --hover: #eeeeee;
+  --font-color: #353539;
+  --primary: #5d9be5;
+}
+
 html {
   font-family: sans-serif;
 }

@@ -6,11 +6,16 @@
                 <input type="text" placeholder="Search for a location..." class="input__text" v-model.trim="location"
                     v-debounce:1000ms="fetchData" />
             </div>
-            <div class="modal__spinner" v-if="isSpinnerLoading">
-                <the-spinner></the-spinner>
-            </div>
-            <div class="modal__menu" v-if="!isSpinnerLoading && results && results.length > 0">
-                <div class="modal__item" v-for="result in results" :key="result.lat" @click="chooseLocation(result)">
+            <div class="modal__menu">
+                <div class="modal__item" @click="setCurrentLocation">
+                    <font-awesome-icon :icon="'fa-solid fa-location-crosshairs'" class="item__icon"></font-awesome-icon>
+                    <p class="item__text">Current Location</p>
+                </div>
+                <div class="modal__spinner" v-if="isSpinnerLoading">
+                    <the-spinner></the-spinner>
+                </div>
+                <div class="modal__item" v-if="!isSpinnerLoading && results && results.length > 0" v-for="result in results"
+                    :key="result.lat" @click="chooseLocation(result)">
                     <font-awesome-icon :icon="'fa-solid fa-location-dot'" class="item__icon"></font-awesome-icon>
                     <p class="item__text">{{ result.name }}, {{ result.state }}, {{ result.country }}</p>
                 </div>
@@ -21,6 +26,7 @@
 
 <script>
 import { vue3Debounce } from "vue-debounce"
+import { getCurrentPosition } from "../utils/utils"
 import TheSpinner from "./TheSpinner.vue"
 import axios from 'axios'
 
@@ -52,6 +58,8 @@ export default {
                 if (this.location !== '') {
                     const response = await axios.get(`${locationsUrl}?q=${this.location}&limit=5&appid=${apiKey}`)
                     this.results = response.data
+                } else {
+                    this.results = []
                 }
                 this.isSpinnerLoading = false;
             } catch (error) {
@@ -68,6 +76,21 @@ export default {
                 localStorage.setItem('weather-app-data', JSON.stringify(response.data))
                 this.isSpinnerLoading = false
                 this.$router.push('/weather')
+            } catch (error) {
+                console.warn(error)
+                this.isSpinnerLoading = false
+            }
+        },
+        async setCurrentLocation() {
+            this.isSpinnerLoading = true
+            try {
+                const { coords } = await getCurrentPosition()
+                const result = {
+                    lat: coords.latitude,
+                    lon: coords.longitude
+                }
+                this.isSpinnerLoading = false
+                this.chooseLocation(result)
             } catch (error) {
                 console.warn(error)
                 this.isSpinnerLoading = false
@@ -119,10 +142,11 @@ export default {
     outline: none;
 }
 
-
+.modal__menu {
+    margin-block-start: 16px;
+}
 
 .modal__item {
-
     padding: 16px;
     color: var(--font-color);
     font-size: 14px;

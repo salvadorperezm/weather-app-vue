@@ -4,6 +4,7 @@ import {
   faTemperatureHigh,
   faSliders,
   faMagnifyingGlass,
+  faLocationCrosshairs,
   faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
@@ -65,6 +66,7 @@ library.add(
   faSliders,
   faTemperatureHigh,
   faMagnifyingGlass,
+  faLocationCrosshairs,
   faLocationDot
 );
 

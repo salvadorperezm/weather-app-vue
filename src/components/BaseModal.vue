@@ -3,8 +3,17 @@
         <section class="modal__container">
             <div class="input__container">
                 <font-awesome-icon :icon="'fa-solid fa-magnifying-glass'" class="input__icon"></font-awesome-icon>
-                <input type="text" placeholder="Search for a location..." class="input__text" v-model="location"
+                <input type="text" placeholder="Search for a location..." class="input__text" v-model.trim="location"
                     v-debounce:1000ms="fetchData" />
+            </div>
+            <div class="modal__spinner" v-if="isSpinnerLoading">
+                <the-spinner></the-spinner>
+            </div>
+            <div class="modal__menu" v-if="!isSpinnerLoading && results && results.length > 0">
+                <div class="modal__item" v-for="result in results" :key="result.lat" @click="chooseLocation(result)">
+                    <font-awesome-icon :icon="'fa-solid fa-location-dot'" class="item__icon"></font-awesome-icon>
+                    <p class="item__text">{{ result.name }}, {{ result.state }}, {{ result.country }}</p>
+                </div>
             </div>
         </section>
     </div>
@@ -12,16 +21,22 @@
 
 <script>
 import { vue3Debounce } from "vue-debounce"
+import TheSpinner from "./TheSpinner.vue"
+import axios from 'axios'
 
 export default {
     directives: {
         debounce: vue3Debounce({ lock: true })
     },
     emits: ['close-modal'],
+    components: {
+        TheSpinner
+    },
     data() {
         return {
+            isSpinnerLoading: false,
             location: null,
-            typingLocation: false
+            results: [],
         }
     },
     methods: {
@@ -29,8 +44,34 @@ export default {
             const clickedComponent = event.target.classList[0]
             this.$emit('close-modal', clickedComponent)
         },
-        fetchData() {
-            console.log(this.location)
+        async fetchData() {
+            this.isSpinnerLoading = true;
+            try {
+                const locationsUrl = import.meta.env.VITE_GEOCODING_API_URL
+                const apiKey = import.meta.env.VITE_OPEN_WEATHER_API_KEY
+                if (this.location !== '') {
+                    const response = await axios.get(`${locationsUrl}?q=${this.location}&limit=5&appid=${apiKey}`)
+                    this.results = response.data
+                }
+                this.isSpinnerLoading = false;
+            } catch (error) {
+                console.warn(error)
+                this.isSpinnerLoading = false
+            }
+        },
+        async chooseLocation(result) {
+            this.isSpinnerLoading = true
+            try {
+                const weatherUrl = import.meta.env.VITE_WEATHER_API_URL
+                const apiKey = import.meta.env.VITE_OPEN_WEATHER_API_KEY
+                const response = await axios.get(`${weatherUrl}?lat=${result.lat}&lon=${result.lon}&appid=${apiKey}`)
+                localStorage.setItem('weather-app-data', JSON.stringify(response.data))
+                this.isSpinnerLoading = false
+                this.$router.push('/weather')
+            } catch (error) {
+                console.warn(error)
+                this.isSpinnerLoading = false
+            }
         }
     }
 }
@@ -76,5 +117,34 @@ export default {
 
 .input__text:focus {
     outline: none;
+}
+
+
+
+.modal__item {
+
+    padding: 16px;
+    color: var(--font-color);
+    font-size: 14px;
+    display: flex;
+    cursor: pointer;
+}
+
+.modal__item:hover {
+    background-color: var(--hover);
+}
+
+.item__icon {
+    margin-inline-end: 16px;
+}
+
+.item__text {
+    flex: 1;
+}
+
+.modal__spinner {
+    display: flex;
+    justify-content: center;
+    padding: 16px;
 }
 </style>

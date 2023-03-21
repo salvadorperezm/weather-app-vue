@@ -4,6 +4,7 @@ import {
   faTemperatureHigh,
   faSliders,
   faMagnifyingGlass,
+  faLocationDot,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { createApp } from "vue";
@@ -59,7 +60,13 @@ const router = createRouter({
   ],
 });
 
-library.add(faSun, faSliders, faTemperatureHigh, faMagnifyingGlass);
+library.add(
+  faSun,
+  faSliders,
+  faTemperatureHigh,
+  faMagnifyingGlass,
+  faLocationDot
+);
 
 app.component("base-button", BaseButton);
 app.component("font-awesome-icon", FontAwesomeIcon);

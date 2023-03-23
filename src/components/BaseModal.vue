@@ -31,6 +31,9 @@ import TheSpinner from "./TheSpinner.vue"
 import axios from 'axios'
 
 export default {
+    created() {
+        this.appSettings = JSON.parse(localStorage.getItem('weather-app-settings'))
+    },
     directives: {
         debounce: vue3Debounce({ lock: true })
     },
@@ -43,6 +46,7 @@ export default {
             isSpinnerLoading: false,
             location: null,
             results: [],
+            appSettings: null
         }
     },
     methods: {
@@ -72,7 +76,7 @@ export default {
             try {
                 const weatherUrl = import.meta.env.VITE_WEATHER_API_URL
                 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API_KEY
-                const response = await axios.get(`${weatherUrl}?lat=${result.lat}&lon=${result.lon}&appid=${apiKey}`)
+                const response = await axios.get(`${weatherUrl}?lat=${result.lat}&lon=${result.lon}&appid=${apiKey}&units=${this.appSettings.units_of_measure}&lang=${this.appSettings.lang}`)
                 localStorage.setItem('weather-app-data', JSON.stringify(response.data))
                 this.isSpinnerLoading = false
                 this.$router.push('/weather')

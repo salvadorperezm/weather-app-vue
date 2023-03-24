@@ -22,7 +22,49 @@
                 </div>
             </div>
             <div class="page__bottom-container">
-                <div class="page__bottom"></div>
+                <div class="page__bottom">
+                    <div class="bottom__header">
+                        <h3 class="bottom__title">today</h3>
+                    </div>
+                    <div class="bottom__body">
+                        <div>
+                            <p>Max</p>
+                            <p>{{ roundTemp(information.main.temp_max) }}</p>
+                        </div>
+                        <div>
+                            <p>Min</p>
+                            <p>{{ roundTemp(information.main.temp_min) }}</p>
+                        </div>
+                        <div>
+                            <p>Humidity</p>
+                            <p>{{ `${information.main.humidity}%` }}</p>
+                        </div>
+                        <div>
+                            <p>Sunrise</p>
+                            <p>{{ convertTime(information.sys.sunrise) }} AM</p>
+                        </div>
+                        <div>
+                            <p>Sunset</p>
+                            <p>{{ convertTime(information.sys.sunset) }} PM</p>
+                        </div>
+                        <div>
+                            <p>Pressure</p>
+                            <p>{{ `${information.main.pressure}hPa` }}</p>
+                        </div>
+                        <div>
+                            <p>Visibility</p>
+                            <p>{{ information.visibility }}m</p>
+                        </div>
+                        <div>
+                            <p>Wind</p>
+                            <p>{{ convertWind(information.wind.speed) }}</p>
+                        </div>
+                        <div>
+                            <p>Weather</p>
+                            <p>{{ information.weather[0].main }}</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -40,7 +82,23 @@ export default {
     },
     methods: {
         roundTemp(temp) {
-            return Math.round(Number(temp))
+            const settings = JSON.parse(localStorage.getItem('weather-app-settings'))
+            console.log(settings)
+            if (settings.units_of_measure === 'metric') {
+                return `${Math.round(Number(temp))}°C`
+            }
+        },
+        convertTime(time) {
+            const convertedTime = new Date(time)
+            return `${convertedTime.getHours()}:${convertedTime.getMinutes()}`
+        },
+        convertWind(windSpeed) {
+            const settings = JSON.parse(localStorage.getItem('weather-app-settings'))
+            if (settings.units_of_measure === 'metric' || settings.units_of_measure === 'standard') {
+                return `${windSpeed}m/s`
+            } else {
+                return `${windSpeed}miles/h`
+            }
         }
     },
     computed: {
@@ -56,7 +114,7 @@ export default {
             } else {
                 return 'top__scheme--night'
             }
-        }
+        },
     }
 }
 </script>
@@ -144,6 +202,7 @@ export default {
 .summary__feels,
 .summary__description {
     font-size: 12.25px;
+    text-transform: capitalize;
 }
 
 .summary__feels {
@@ -159,5 +218,23 @@ export default {
 .top__scheme--night {
     background-color: #44296a;
     color: var(--white)
+}
+
+.bottom__header {
+    padding: 16px 32px;
+}
+
+.bottom__title {
+    text-transform: uppercase;
+    font-size: 12.25px;
+}
+
+.bottom__body {
+    height: calc(100% - 46px);
+    padding-inline: 32px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 16px;
 }
 </style>

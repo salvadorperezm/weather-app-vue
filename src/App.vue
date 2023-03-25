@@ -13,6 +13,11 @@
 import TheFooter from "./components/TheFooter.vue"
 
 export default {
+  created() {
+    if (!localStorage.getItem('weather-app-settings')) {
+      localStorage.setItem('weather-app-settings', JSON.stringify({ lang: 'en', units_of_measure: 'metric' }))
+    }
+  },
   components: {
     TheFooter
   }

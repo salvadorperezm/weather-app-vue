@@ -37,7 +37,7 @@ export default {
     directives: {
         debounce: vue3Debounce({ lock: true })
     },
-    emits: ['close-modal'],
+    emits: ['close-modal', 'refetch-data'],
     components: {
         TheSpinner
     },
@@ -79,6 +79,7 @@ export default {
                 const response = await axios.get(`${weatherUrl}?lat=${result.lat}&lon=${result.lon}&appid=${apiKey}&units=${this.appSettings.units_of_measure}&lang=${this.appSettings.lang}`)
                 localStorage.setItem('weather-app-data', JSON.stringify(response.data))
                 this.isSpinnerLoading = false
+                this.$emit('refetch-data')
                 this.$router.push('/weather')
             } catch (error) {
                 console.warn(error)

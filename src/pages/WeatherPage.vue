@@ -4,12 +4,13 @@
             <div class="page__top-container" :class="determineTime">
                 <div class="page__top">
                     <div class="page__actions">
-                        <div class="page__location">
+                        <div class="page__location" @click="toggleModal">
                             <font-awesome-icon :icon="'fa-solid fa-location-dot'"
                                 class="location__icon"></font-awesome-icon>
                             <p class="location__text">{{ information.name }}</p>
                         </div>
-                        <font-awesome-icon :icon="'fa-solid fa-rotate'" class="page__reload"></font-awesome-icon>
+                        <font-awesome-icon :icon="'fa-solid fa-rotate'" :class="['page__reload', dataRefetchingAnimation]"
+                            @click="refetchData"></font-awesome-icon>
                     </div>
                     <div class="page__summary">
                         <div class="summary__info">
@@ -27,63 +28,76 @@
                         <h3 class="bottom__title">today</h3>
                     </div>
                     <div class="bottom__body">
-                        <div>
-                            <p>Max</p>
-                            <p>{{ roundTemp(information.main.temp_max) }}</p>
+                        <div class="body__item">
+                            <p class="item__title">Max</p>
+                            <p class="item__value">{{ roundTemp(information.main.temp_max) }}</p>
                         </div>
-                        <div>
-                            <p>Min</p>
-                            <p>{{ roundTemp(information.main.temp_min) }}</p>
+                        <div class="body__item">
+                            <p class="item__title">Min</p>
+                            <p class="item__value">{{ roundTemp(information.main.temp_min) }}</p>
                         </div>
-                        <div>
-                            <p>Humidity</p>
-                            <p>{{ `${information.main.humidity}%` }}</p>
+                        <div class="body__item">
+                            <p class="item__title">Humidity</p>
+                            <p class="item__value">{{ `${information.main.humidity}%` }}</p>
                         </div>
-                        <div>
-                            <p>Sunrise</p>
-                            <p>{{ convertTime(information.sys.sunrise) }} AM</p>
+                        <div class="body__item">
+                            <p class="item__title">Sunrise</p>
+                            <p class="item__value">{{ convertTime(information.sys.sunrise) }} AM</p>
                         </div>
-                        <div>
-                            <p>Sunset</p>
-                            <p>{{ convertTime(information.sys.sunset) }} PM</p>
+                        <div class="body__item">
+                            <p class="item__title">Sunset</p>
+                            <p class="item__value">{{ convertTime(information.sys.sunset) }} PM</p>
                         </div>
-                        <div>
-                            <p>Pressure</p>
-                            <p>{{ `${information.main.pressure}hPa` }}</p>
+                        <div class="body__item">
+                            <p class="item__title">Pressure</p>
+                            <p class="item__value">{{ `${information.main.pressure}hPa` }}</p>
                         </div>
-                        <div>
-                            <p>Visibility</p>
-                            <p>{{ information.visibility }}m</p>
+                        <div class="body__item">
+                            <p class="item__title">Visibility</p>
+                            <p class="item__value">{{ information.visibility }}m</p>
                         </div>
-                        <div>
-                            <p>Wind</p>
-                            <p>{{ convertWind(information.wind.speed) }}</p>
+                        <div class="body__item">
+                            <p class="item__title">Wind</p>
+                            <p class="item__value">{{ convertWind(information.wind.speed) }}</p>
                         </div>
-                        <div>
-                            <p>Weather</p>
-                            <p>{{ information.weather[0].main }}</p>
+                        <div class="body__item">
+                            <p class="item__title">Weather</p>
+                            <p class="item__value">{{ information.weather[0].main }}</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+        <transition name="modal">
+            <base-modal v-if="isModalOpen" @close-modal="toggleModal" @refetch-data="updatePage"></base-modal>
+        </transition>
     </section>
 </template>
 
 <script>
+import axios from 'axios'
+
+import BaseModal from '../components/BaseModal.vue'
+
 export default {
+    components: {
+        BaseModal
+    },
     created() {
         this.information = JSON.parse(localStorage.getItem('weather-app-data'))
+        this.appSettings = JSON.parse(localStorage.getItem('weather-app-settings'))
     },
     data() {
         return {
+            appSettings: null,
             information: null,
+            isModalOpen: false,
+            isDataRefetching: false
         }
     },
     methods: {
         roundTemp(temp) {
             const settings = JSON.parse(localStorage.getItem('weather-app-settings'))
-            console.log(settings)
             if (settings.units_of_measure === 'metric') {
                 return `${Math.round(Number(temp))}°C`
             }
@@ -98,6 +112,31 @@ export default {
                 return `${windSpeed}m/s`
             } else {
                 return `${windSpeed}miles/h`
+            }
+        },
+        toggleModal(clickedComponent) {
+            this.isModalOpen = true
+
+            if (this.isModalOpen === true && clickedComponent === 'modal') {
+                this.isModalOpen = false
+            }
+        },
+        updatePage() {
+            this.$router.go()
+        },
+        async refetchData() {
+            console.log(this.information)
+            console.log(this.appSettings)
+            this.isDataRefetching = true
+            try {
+                const weatherUrl = import.meta.env.VITE_WEATHER_API_URL
+                const apiKey = import.meta.env.VITE_OPEN_WEATHER_API_KEY
+                const response = await axios.get(`${weatherUrl}?lat=${this.information.coord.lat}&lon=${this.information.coord.lon}&appid=${apiKey}&units=${this.appSettings.units_of_measure}&lang=${this.appSettings.lang}`)
+                localStorage.setItem('weather-app-data', JSON.stringify(response.data))
+                this.isDataRefetching = false
+            } catch (error) {
+                console.warn(error)
+                this.isDataRefetching = false
             }
         }
     },
@@ -115,15 +154,16 @@ export default {
                 return 'top__scheme--night'
             }
         },
+        dataRefetchingAnimation() {
+            if (this.isDataRefetching) {
+                return 'data-refetching'
+            }
+        }
     }
 }
 </script>
 
 <style scoped>
-.page__container {
-    border: 1px solid red;
-}
-
 .page {
     display: flex;
     flex-direction: column;
@@ -139,7 +179,6 @@ export default {
     height: 100%;
     max-width: 1200px;
     margin: 0 auto;
-    border: 1px solid green;
     display: flex;
     flex-direction: column;
 }
@@ -151,7 +190,6 @@ export default {
 
 .page__bottom {
     height: 100%;
-    border: 1px solid blue;
     max-width: 1200px;
     margin: 0 auto;
 }
@@ -167,6 +205,14 @@ export default {
     display: flex;
     align-items: center;
     padding: 8px;
+}
+
+.page__location:hover,
+.page__reload:hover {
+    background-color: var(--hover);
+    color: var(--black);
+    border-radius: 5px;
+    cursor: pointer;
 }
 
 .location__icon,
@@ -186,7 +232,6 @@ export default {
 
 .page__summary {
     flex: 1;
-    border: 1px solid red;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -236,5 +281,55 @@ export default {
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
     gap: 16px;
+}
+
+.body__item {
+    font-size: 12.15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.item__title {
+    color: var(--font-color-meta);
+    margin-block-end: 5px;
+    text-transform: capitalize;
+}
+
+.item__value {
+    color: var(--font-color);
+}
+
+.modal-enter-active {
+    animation: fade .3s ease;
+}
+
+.modal-leave-active {
+    animation: fade .3s ease reverse;
+}
+
+.data-refetching {
+    animation: rotation 1s linear infinite;
+}
+
+@keyframes fade {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes rotation {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
 }
 </style>

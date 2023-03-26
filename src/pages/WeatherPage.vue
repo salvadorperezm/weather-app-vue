@@ -22,7 +22,7 @@
                     </div>
                 </div>
             </div>
-            <div class="page__bottom-container">
+            <div :class="['page__bottom-container', determineBackgroundMobile]">
                 <div class="page__bottom">
                     <div class="bottom__header">
                         <h3 class="bottom__title">today</h3>
@@ -87,12 +87,17 @@ export default {
         this.information = JSON.parse(localStorage.getItem('weather-app-data'))
         this.appSettings = JSON.parse(localStorage.getItem('weather-app-settings'))
     },
+    mounted() {
+        this.updateScreenWidth()
+        this.onScreenResize()
+    },
     data() {
         return {
             appSettings: null,
             information: null,
             isModalOpen: false,
-            isDataRefetching: false
+            isDataRefetching: false,
+            screenWidth: 0
         }
     },
     methods: {
@@ -125,8 +130,6 @@ export default {
             this.$router.go()
         },
         async refetchData() {
-            console.log(this.information)
-            console.log(this.appSettings)
             this.isDataRefetching = true
             try {
                 const weatherUrl = import.meta.env.VITE_WEATHER_API_URL
@@ -138,6 +141,14 @@ export default {
                 console.warn(error)
                 this.isDataRefetching = false
             }
+        },
+        onScreenResize() {
+            window.addEventListener('resize', () => {
+                this.updateScreenWidth()
+            })
+        },
+        updateScreenWidth() {
+            this.screenWidth = window.innerWidth
         }
     },
     computed: {
@@ -157,6 +168,17 @@ export default {
         dataRefetchingAnimation() {
             if (this.isDataRefetching) {
                 return 'data-refetching'
+            }
+        },
+        determineBackgroundMobile() {
+            const weatherIconCode = this.information.weather[0].icon
+            const weatherIconCodeToArray = weatherIconCode.split('')
+            if (this.screenWidth < 1024 && weatherIconCodeToArray[weatherIconCodeToArray.length - 1] === 'd') {
+                return 'top__scheme--day'
+            } else if (this.screenWidth < 1024 && weatherIconCodeToArray[weatherIconCodeToArray.length - 1] === 'n') {
+                return 'top__scheme--night'
+            } else if (this.screenWidth >= 1024) {
+                return 'default'
             }
         }
     }
@@ -192,6 +214,10 @@ export default {
     height: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    padding-block-start: 16px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    background-color: var(--white);
 }
 
 .page__actions {
@@ -205,14 +231,6 @@ export default {
     display: flex;
     align-items: center;
     padding: 8px;
-}
-
-.page__location:hover,
-.page__reload:hover {
-    background-color: var(--hover);
-    color: var(--black);
-    border-radius: 5px;
-    cursor: pointer;
 }
 
 .location__icon,
@@ -272,6 +290,7 @@ export default {
 .bottom__title {
     text-transform: uppercase;
     font-size: 12.25px;
+    color: var(--black)
 }
 
 .bottom__body {
@@ -284,7 +303,7 @@ export default {
 }
 
 .body__item {
-    font-size: 12.15px;
+    font-size: 12.25px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -313,6 +332,10 @@ export default {
     animation: rotation 1s linear infinite;
 }
 
+.default {
+    background-color: var(--white);
+}
+
 @keyframes fade {
     from {
         opacity: 0;
@@ -330,6 +353,34 @@ export default {
 
     100% {
         transform: rotate(360deg);
+    }
+}
+
+@media screen and (min-width: 1024px) {
+
+    .page__location:hover,
+    .page__reload:hover {
+        background-color: var(--hover);
+        color: var(--black);
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .summary__temperature {
+        font-size: 82px;
+    }
+
+    .location__text,
+    .summary__feels,
+    .summary__description,
+    .bottom__title,
+    .body__item {
+        font-size: 16px;
+    }
+
+    .page__bottom {
+        border-top-right-radius: 0px;
+        border-top-left-radius: 0px;
     }
 }
 </style>

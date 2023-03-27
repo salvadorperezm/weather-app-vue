@@ -13,13 +13,17 @@
                             @click="refetchData"></font-awesome-icon>
                     </div>
                     <div class="page__summary">
-                        <div class="summary__info">
-                            <h2 class="summary__temperature">{{ roundTemp(information.main.temp) }}</h2>
-                            <p class="summary__feels">Feels like {{ roundTemp(information.main.feels_like) }}</p>
-                            <p class="summary__description">{{ information.weather[0].description }}</p>
+                        <div class="page__info">
+                            <div class="summary__info">
+                                <h2 class="summary__temperature">{{ roundTemp(information.main.temp) }}</h2>
+                                <p class="summary__feels">Feels like {{ roundTemp(information.main.feels_like) }}</p>
+                                <p class="summary__description">{{ information.weather[0].description }}</p>
+                            </div>
+                            <img class="summary__icon" :src="iconUrl" alt="Weather icon">
                         </div>
-                        <img class="summary__icon" :src="iconUrl" alt="Weather icon">
+                        <p class="page__last-updated">{{ lastUpdated }}</p>
                     </div>
+
                 </div>
             </div>
             <div :class="['page__bottom-container', determineBackgroundMobile]">
@@ -86,6 +90,10 @@ export default {
     created() {
         this.information = JSON.parse(localStorage.getItem('weather-app-data'))
         this.appSettings = JSON.parse(localStorage.getItem('weather-app-settings'))
+        this.checkLastUpdated()
+        setInterval(() => {
+            this.checkLastUpdated()
+        }, 10000)
     },
     mounted() {
         this.updateScreenWidth()
@@ -97,7 +105,8 @@ export default {
             information: null,
             isModalOpen: false,
             isDataRefetching: false,
-            screenWidth: 0
+            screenWidth: 0,
+            lastUpdated: ''
         }
     },
     methods: {
@@ -135,7 +144,7 @@ export default {
                 const weatherUrl = import.meta.env.VITE_WEATHER_API_URL
                 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API_KEY
                 const response = await axios.get(`${weatherUrl}?lat=${this.information.coord.lat}&lon=${this.information.coord.lon}&appid=${apiKey}&units=${this.appSettings.units_of_measure}&lang=${this.appSettings.lang}`)
-                localStorage.setItem('weather-app-data', JSON.stringify(response.data))
+                localStorage.setItem('weather-app-data', JSON.stringify({ ...response.data, lastUpdated: new Date() }))
                 this.isDataRefetching = false
             } catch (error) {
                 console.warn(error)
@@ -149,6 +158,19 @@ export default {
         },
         updateScreenWidth() {
             this.screenWidth = window.innerWidth
+        },
+        checkLastUpdated() {
+            const currentDate = new Date()
+            const lastUpdated = new Date(this.information.lastUpdated)
+            const difference = currentDate - lastUpdated
+            const differenceInMinutes = Math.round(((difference / 1000) / 60))
+            if (differenceInMinutes === 0 || differenceInMinutes === 1) {
+                this.lastUpdated = 'Updated 1 minute ago'
+            } else if (differenceInMinutes > 0 && differenceInMinutes < 60) {
+                this.lastUpdated = `Updated ${differenceInMinutes} minutes ago`
+            } else if (differenceInMinutes >= 60) {
+                this.lastUpdated = `Updated ${Math.round(differenceInMinutes / 60) === 1 ? 'hour ago' : 'hours ago'} `
+            }
         }
     },
     computed: {
@@ -248,12 +270,23 @@ export default {
     padding: 8px;
 }
 
-.page__summary {
+.page__info {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+}
+
+.page__summary {
     padding: 0px 32px 32px;
+    height: 100%;
+}
+
+.page__last-updated {
+    opacity: 0.5;
+    margin-block-start: 32px;
+    font-size: 12.25px;
 }
 
 .summary__temperature {
@@ -373,6 +406,7 @@ export default {
     .location__text,
     .summary__feels,
     .summary__description,
+    .page__last-updated,
     .bottom__title,
     .body__item {
         font-size: 16px;

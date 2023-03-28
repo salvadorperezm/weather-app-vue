@@ -14,7 +14,6 @@ import { createRouter, createWebHistory } from "vue-router";
 
 import App from "./App.vue";
 import BaseButton from "./components/BaseButton.vue";
-import ForecastPage from "./pages/ForecastPage.vue";
 import SettingsPage from "./pages/SettingsPage.vue";
 import SelectLocation from "./pages/SelectLocation.vue";
 import WeatherPage from "./pages/WeatherPage.vue";
@@ -28,20 +27,16 @@ const router = createRouter({
     {
       path: "/",
       component: SelectLocation,
-    },
-    {
-      path: "/weather",
-      component: WeatherPage,
       beforeEnter: () => {
         const info = localStorage.getItem("weather-app-data");
-        if (!info) {
-          return "/";
+        if (info) {
+          return "/weather";
         }
       },
     },
     {
-      path: "/forecast",
-      component: ForecastPage,
+      path: "/weather",
+      component: WeatherPage,
       beforeEnter: () => {
         const info = localStorage.getItem("weather-app-data");
         if (!info) {

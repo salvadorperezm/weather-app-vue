@@ -1,30 +1,51 @@
-<script setup>
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <div>
-    <a href="https://vitejs.dev" target="_blank">
-      <img src="/vite.svg" class="logo" alt="Vite logo" />
-    </a>
-    <a href="https://vuejs.org/" target="_blank">
-      <img src="./assets/vue.svg" class="logo vue" alt="Vue logo" />
-    </a>
+  <div class="app__container">
+    <router-view v-slot="{ Component }">
+      <transition name="fade">
+        <component :is="Component" />
+      </transition>
+    </router-view>
+    <the-footer></the-footer>
   </div>
-  <HelloWorld msg="Vite + Vue" />
 </template>
 
+<script>
+import TheFooter from "./components/TheFooter.vue"
+
+export default {
+  created() {
+    if (!localStorage.getItem('weather-app-settings')) {
+      localStorage.setItem('weather-app-settings', JSON.stringify({ lang: 'en', units_of_measure: 'metric' }))
+    }
+  },
+  components: {
+    TheFooter
+  }
+}
+</script>
+
 <style scoped>
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
+.app__container {
+  display: grid;
+  height: 100vh;
+  width: 100vw;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr auto;
 }
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+
+.fade-enter-active {
+  animation: fade .5s ease;
 }
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #42b883aa);
+
+@keyframes fade {
+  from {
+    opacity: 0;
+    scale: 0.9;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
 }
 </style>

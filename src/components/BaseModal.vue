@@ -77,7 +77,7 @@ export default {
                 const weatherUrl = import.meta.env.VITE_WEATHER_API_URL
                 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API_KEY
                 const response = await axios.get(`${weatherUrl}?lat=${result.lat}&lon=${result.lon}&appid=${apiKey}&units=${this.appSettings.units_of_measure}&lang=${this.appSettings.lang}`)
-                localStorage.setItem('weather-app-data', JSON.stringify(response.data))
+                localStorage.setItem('weather-app-data', JSON.stringify({ ...response.data, lastUpdated: new Date() }))
                 this.isSpinnerLoading = false
                 this.$emit('refetch-data')
                 this.$router.push('/weather')

@@ -13,16 +13,20 @@
                             @click="refetchData"></font-awesome-icon>
                     </div>
                     <div class="page__summary">
-                        <div class="summary__info">
-                            <h2 class="summary__temperature">{{ roundTemp(information.main.temp) }}</h2>
-                            <p class="summary__feels">Feels like {{ roundTemp(information.main.feels_like) }}</p>
-                            <p class="summary__description">{{ information.weather[0].description }}</p>
+                        <div class="page__info">
+                            <div class="summary__info">
+                                <h2 class="summary__temperature">{{ roundTemp(information.main.temp) }}</h2>
+                                <p class="summary__feels">Feels like {{ roundTemp(information.main.feels_like) }}</p>
+                                <p class="summary__description">{{ information.weather[0].description }}</p>
+                            </div>
+                            <img class="summary__icon" :src="iconUrl" alt="Weather icon">
                         </div>
-                        <img class="summary__icon" :src="iconUrl" alt="Weather icon">
+                        <p class="page__last-updated">{{ lastUpdated }}</p>
                     </div>
+
                 </div>
             </div>
-            <div class="page__bottom-container">
+            <div :class="['page__bottom-container', determineBackgroundMobile]">
                 <div class="page__bottom">
                     <div class="bottom__header">
                         <h3 class="bottom__title">today</h3>
@@ -86,13 +90,23 @@ export default {
     created() {
         this.information = JSON.parse(localStorage.getItem('weather-app-data'))
         this.appSettings = JSON.parse(localStorage.getItem('weather-app-settings'))
+        this.checkLastUpdated()
+        setInterval(() => {
+            this.checkLastUpdated()
+        }, 10000)
+    },
+    mounted() {
+        this.updateScreenWidth()
+        this.onScreenResize()
     },
     data() {
         return {
             appSettings: null,
             information: null,
             isModalOpen: false,
-            isDataRefetching: false
+            isDataRefetching: false,
+            screenWidth: 0,
+            lastUpdated: ''
         }
     },
     methods: {
@@ -125,18 +139,40 @@ export default {
             this.$router.go()
         },
         async refetchData() {
-            console.log(this.information)
-            console.log(this.appSettings)
             this.isDataRefetching = true
             try {
                 const weatherUrl = import.meta.env.VITE_WEATHER_API_URL
                 const apiKey = import.meta.env.VITE_OPEN_WEATHER_API_KEY
                 const response = await axios.get(`${weatherUrl}?lat=${this.information.coord.lat}&lon=${this.information.coord.lon}&appid=${apiKey}&units=${this.appSettings.units_of_measure}&lang=${this.appSettings.lang}`)
-                localStorage.setItem('weather-app-data', JSON.stringify(response.data))
+                localStorage.setItem('weather-app-data', JSON.stringify({ ...response.data, lastUpdated: new Date() }))
                 this.isDataRefetching = false
+                this.information = JSON.parse(localStorage.getItem('weather-app-data'))
+                this.checkLastUpdated()
             } catch (error) {
                 console.warn(error)
                 this.isDataRefetching = false
+            }
+        },
+        onScreenResize() {
+            window.addEventListener('resize', () => {
+                this.updateScreenWidth()
+            })
+        },
+        updateScreenWidth() {
+            this.screenWidth = window.innerWidth
+        },
+        checkLastUpdated() {
+            const currentDate = new Date()
+            const lastUpdated = new Date(this.information.lastUpdated)
+            const difference = currentDate - lastUpdated
+            const differenceInMinutes = Math.round(((difference / 1000) / 60))
+            if (differenceInMinutes === 0 || differenceInMinutes === 1) {
+                this.lastUpdated = 'Updated 1 minute ago'
+            } else if (differenceInMinutes > 0 && differenceInMinutes < 60) {
+                this.lastUpdated = `Updated ${differenceInMinutes} minutes ago`
+            } else if (differenceInMinutes >= 60) {
+                const differenceInHours = Math.round(differenceInMinutes / 60)
+                differenceInHours === 1 ? this.lastUpdated = 'updated 1 hour ago' : this.lastUpdated = `Updated ${differenceInHours} hours ago`
             }
         }
     },
@@ -157,6 +193,17 @@ export default {
         dataRefetchingAnimation() {
             if (this.isDataRefetching) {
                 return 'data-refetching'
+            }
+        },
+        determineBackgroundMobile() {
+            const weatherIconCode = this.information.weather[0].icon
+            const weatherIconCodeToArray = weatherIconCode.split('')
+            if (this.screenWidth < 1024 && weatherIconCodeToArray[weatherIconCodeToArray.length - 1] === 'd') {
+                return 'top__scheme--day'
+            } else if (this.screenWidth < 1024 && weatherIconCodeToArray[weatherIconCodeToArray.length - 1] === 'n') {
+                return 'top__scheme--night'
+            } else if (this.screenWidth >= 1024) {
+                return 'default'
             }
         }
     }
@@ -192,6 +239,10 @@ export default {
     height: 100%;
     max-width: 1200px;
     margin: 0 auto;
+    padding-block-start: 16px;
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    background-color: var(--white);
 }
 
 .page__actions {
@@ -205,14 +256,6 @@ export default {
     display: flex;
     align-items: center;
     padding: 8px;
-}
-
-.page__location:hover,
-.page__reload:hover {
-    background-color: var(--hover);
-    color: var(--black);
-    border-radius: 5px;
-    cursor: pointer;
 }
 
 .location__icon,
@@ -230,12 +273,23 @@ export default {
     padding: 8px;
 }
 
-.page__summary {
+.page__info {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: space-between;
+
+}
+
+.page__summary {
     padding: 0px 32px 32px;
+    height: 100%;
+}
+
+.page__last-updated {
+    opacity: 0.5;
+    margin-block-start: 32px;
+    font-size: 12.25px;
 }
 
 .summary__temperature {
@@ -272,6 +326,7 @@ export default {
 .bottom__title {
     text-transform: uppercase;
     font-size: 12.25px;
+    color: var(--black)
 }
 
 .bottom__body {
@@ -284,7 +339,7 @@ export default {
 }
 
 .body__item {
-    font-size: 12.15px;
+    font-size: 12.25px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -313,6 +368,10 @@ export default {
     animation: rotation 1s linear infinite;
 }
 
+.default {
+    background-color: var(--white);
+}
+
 @keyframes fade {
     from {
         opacity: 0;
@@ -330,6 +389,35 @@ export default {
 
     100% {
         transform: rotate(360deg);
+    }
+}
+
+@media screen and (min-width: 1024px) {
+
+    .page__location:hover,
+    .page__reload:hover {
+        background-color: var(--hover);
+        color: var(--black);
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .summary__temperature {
+        font-size: 82px;
+    }
+
+    .location__text,
+    .summary__feels,
+    .summary__description,
+    .page__last-updated,
+    .bottom__title,
+    .body__item {
+        font-size: 16px;
+    }
+
+    .page__bottom {
+        border-top-right-radius: 0px;
+        border-top-left-radius: 0px;
     }
 }
 </style>

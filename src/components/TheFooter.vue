@@ -48,9 +48,6 @@ export default {}
     color: var(--font-color);
 }
 
-.nav__item:hover {
-    background-color: var(--hover);
-}
 
 .item__text {
     margin-block-start: 8px;
@@ -58,5 +55,11 @@ export default {}
 
 .router-link-active {
     color: var(--primary)
+}
+
+@media screen and (min-width: 1024px) {
+    .nav__item:hover {
+        background-color: var(--hover);
+    }
 }
 </style>

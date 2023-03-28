@@ -146,6 +146,8 @@ export default {
                 const response = await axios.get(`${weatherUrl}?lat=${this.information.coord.lat}&lon=${this.information.coord.lon}&appid=${apiKey}&units=${this.appSettings.units_of_measure}&lang=${this.appSettings.lang}`)
                 localStorage.setItem('weather-app-data', JSON.stringify({ ...response.data, lastUpdated: new Date() }))
                 this.isDataRefetching = false
+                this.information = JSON.parse(localStorage.getItem('weather-app-data'))
+                this.checkLastUpdated()
             } catch (error) {
                 console.warn(error)
                 this.isDataRefetching = false
@@ -169,7 +171,8 @@ export default {
             } else if (differenceInMinutes > 0 && differenceInMinutes < 60) {
                 this.lastUpdated = `Updated ${differenceInMinutes} minutes ago`
             } else if (differenceInMinutes >= 60) {
-                this.lastUpdated = `Updated ${Math.round(differenceInMinutes / 60) === 1 ? 'hour ago' : 'hours ago'} `
+                const differenceInHours = Math.round(differenceInMinutes / 60)
+                differenceInHours === 1 ? this.lastUpdated = 'updated 1 hour ago' : this.lastUpdated = `Updated ${differenceInHours} hours ago`
             }
         }
     },

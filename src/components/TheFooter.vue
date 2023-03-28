@@ -5,10 +5,6 @@
                 <font-awesome-icon icon="fa-regular fa-sun" class="item__icon" />
                 <small class="item__text">Weather</small>
             </router-link>
-            <router-link to="/forecast" class="nav__item">
-                <font-awesome-icon icon="fa-solid fa-temperature-high" class="item__icon" />
-                <small class="item__text">Forecast</small>
-            </router-link>
             <router-link to="/settings" class="nav__item">
                 <font-awesome-icon icon="fa-solid fa-sliders" class="item__icon" />
                 <small class="item__text">Settings</small>
@@ -30,7 +26,7 @@ export default {}
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     grid-template-rows: 1;
     gap: 16px;
     padding-inline: 24px;
@@ -48,9 +44,6 @@ export default {}
     color: var(--font-color);
 }
 
-.nav__item:hover {
-    background-color: var(--hover);
-}
 
 .item__text {
     margin-block-start: 8px;
@@ -58,5 +51,11 @@ export default {}
 
 .router-link-active {
     color: var(--primary)
+}
+
+@media screen and (min-width: 1024px) {
+    .nav__item:hover {
+        background-color: var(--hover);
+    }
 }
 </style>

@@ -23,7 +23,6 @@
 export default {
     created() {
         this.appSettings = JSON.parse(localStorage.getItem('weather-app-settings'))
-        console.log(this.appSettings)
         this.unitOfMeasure = this.appSettings.units_of_measure
     },
     data() {

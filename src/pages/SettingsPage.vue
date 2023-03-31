@@ -8,11 +8,14 @@
                     <div class="body__item">
                         <label for="units" class="item__label">Units</label>
                         <select class="item__select" v-model="unitOfMeasure" @change="setNewUnitOfMeasure(unitOfMeasure)">
-                            <option value="metric">Metric</option>
-                            <option value="standard">Standard</option>
-                            <option value="imperial">Imperial</option>
+                            <option value="metric">Metric (°C)</option>
+                            <option value="standard">Standard (K)</option>
+                            <option value="imperial">Imperial (℉)</option>
                         </select>
                     </div>
+                </div>
+                <div class="spinner-container" v-if="isDataFetching">
+                    <the-spinner></the-spinner>
                 </div>
             </div>
         </section>
@@ -20,21 +23,42 @@
 </template>
 
 <script>
+import axios from 'axios'
+
+import TheSpinner from '../components/TheSpinner.vue'
+
 export default {
+    components: {
+        TheSpinner
+    },
     created() {
         this.appSettings = JSON.parse(localStorage.getItem('weather-app-settings'))
         this.unitOfMeasure = this.appSettings.units_of_measure
+        this.information = JSON.parse(localStorage.getItem('weather-app-data'))
     },
     data() {
         return {
             appSettings: null,
-            unitOfMeasure: null
+            isDataFetching: false,
+            unitOfMeasure: null,
+            information: null
         }
     },
     methods: {
-        setNewUnitOfMeasure(newUnit) {
+        async setNewUnitOfMeasure(newUnit) {
             const newAppSettings = { ...this.appSettings, units_of_measure: newUnit }
             localStorage.setItem('weather-app-settings', JSON.stringify(newAppSettings))
+            this.isDataFetching = true
+            try {
+                const weatherUrl = import.meta.env.VITE_WEATHER_API_URL
+                const apiKey = import.meta.env.VITE_OPEN_WEATHER_API_KEY
+                const response = await axios.get(`${weatherUrl}?lat=${this.information.coord.lat}&lon=${this.information.coord.lon}&appid=${apiKey}&units=${newUnit}&lang=${this.appSettings.lang}`)
+                localStorage.setItem('weather-app-data', JSON.stringify({ ...response.data, lastUpdated: new Date() }))
+                this.isDataFetching = false
+            } catch (error) {
+                console.warn(error)
+                this.isDataFetching = false
+            }
         }
     }
 }
@@ -84,5 +108,11 @@ export default {
     outline: none;
     border: none;
     background-color: #fff;
+}
+
+.spinner-container {
+    display: flex;
+    justify-content: center;
+    padding-block: 16px;
 }
 </style>

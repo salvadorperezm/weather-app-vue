@@ -114,6 +114,10 @@ export default {
             const settings = JSON.parse(localStorage.getItem('weather-app-settings'))
             if (settings.units_of_measure === 'metric') {
                 return `${Math.round(Number(temp))}°C`
+            } else if (settings.units_of_measure === 'imperial') {
+                return `${Math.round(Number(temp))}℉`
+            } else if (settings.units_of_measure === 'standard') {
+                return `${Math.round(Number(temp))}K`
             }
         },
         convertTime(time) {

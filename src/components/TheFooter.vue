@@ -1,11 +1,11 @@
 <template>
     <footer class="footer">
         <nav class="footer__nav">
-            <router-link to="/weather" class="nav__item">
+            <router-link to="/weather-app-vue/weather" class="nav__item">
                 <font-awesome-icon icon="fa-regular fa-sun" class="item__icon" />
                 <small class="item__text">Weather</small>
             </router-link>
-            <router-link to="/settings" class="nav__item">
+            <router-link to="/weather-app-vue/settings" class="nav__item">
                 <font-awesome-icon icon="fa-solid fa-sliders" class="item__icon" />
                 <small class="item__text">Settings</small>
             </router-link>

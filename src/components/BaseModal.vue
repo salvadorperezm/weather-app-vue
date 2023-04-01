@@ -80,7 +80,7 @@ export default {
                 localStorage.setItem('weather-app-data', JSON.stringify({ ...response.data, lastUpdated: new Date() }))
                 this.isSpinnerLoading = false
                 this.$emit('refetch-data')
-                this.$router.push('/weather')
+                this.$router.push('/weather-app-vue/weather')
             } catch (error) {
                 console.warn(error)
                 this.isSpinnerLoading = false

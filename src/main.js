@@ -25,32 +25,32 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
-      path: "/",
+      path: "/weather-app-vue",
       component: SelectLocation,
       beforeEnter: () => {
         const info = localStorage.getItem("weather-app-data");
         if (info) {
-          return "/weather";
+          return "/weather-app-vue/weather";
         }
       },
     },
     {
-      path: "/weather",
+      path: "/weather-app-vue/weather",
       component: WeatherPage,
       beforeEnter: () => {
         const info = localStorage.getItem("weather-app-data");
         if (!info) {
-          return "/";
+          return "/weather-app-vue/";
         }
       },
     },
     {
-      path: "/settings",
+      path: "/weather-app-vue/settings",
       component: SettingsPage,
       beforeEnter: () => {
         const info = localStorage.getItem("weather-app-data");
         if (!info) {
-          return "/";
+          return "/weather-app-vue/";
         }
       },
     },

@@ -7,6 +7,7 @@ import {
   faLocationCrosshairs,
   faLocationDot,
   faRotate,
+  faCircleExclamation,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { createApp } from "vue";
@@ -64,7 +65,8 @@ library.add(
   faMagnifyingGlass,
   faLocationCrosshairs,
   faLocationDot,
-  faRotate
+  faRotate,
+  faCircleExclamation
 );
 
 app.component("base-button", BaseButton);

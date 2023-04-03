@@ -21,6 +21,11 @@
                 </div>
             </div>
         </section>
+        <transition name="toast" mode="out-in">
+            <base-toast v-if="isToastOpen" @close-modal="isToastOpen = false" :title="'Error.'"
+                :description="'Verify your internet connection or try again later.'" :type="'error'"
+                :duration="'4000'"></base-toast>
+        </transition>
     </div>
 </template>
 
@@ -29,6 +34,7 @@ import { vue3Debounce } from "vue-debounce"
 import { getCurrentPosition } from "../utils/utils"
 import TheSpinner from "./TheSpinner.vue"
 import axios from 'axios'
+import BaseToast from "./BaseToast.vue"
 
 export default {
     created() {
@@ -39,14 +45,16 @@ export default {
     },
     emits: ['close-modal', 'refetch-data'],
     components: {
-        TheSpinner
+        TheSpinner,
+        BaseToast
     },
     data() {
         return {
             isSpinnerLoading: false,
             location: null,
             results: [],
-            appSettings: null
+            appSettings: null,
+            isToastOpen: false
         }
     },
     methods: {
@@ -67,8 +75,8 @@ export default {
                 }
                 this.isSpinnerLoading = false;
             } catch (error) {
-                console.warn(error)
                 this.isSpinnerLoading = false
+                this.isToastOpen = true
             }
         },
         async chooseLocation(result) {
@@ -82,8 +90,8 @@ export default {
                 this.$emit('refetch-data')
                 this.$router.push('/weather-app-vue/weather')
             } catch (error) {
-                console.warn(error)
                 this.isSpinnerLoading = false
+                this.isToastOpen = true
             }
         },
         async setCurrentLocation() {
@@ -97,8 +105,8 @@ export default {
                 this.isSpinnerLoading = false
                 this.chooseLocation(result)
             } catch (error) {
-                console.warn(error)
                 this.isSpinnerLoading = false
+                this.isToastOpen = true
             }
         }
     }
@@ -175,5 +183,23 @@ export default {
     display: flex;
     justify-content: center;
     padding: 16px;
+}
+
+.toast-enter-active {
+    animation: toast .3s ease;
+}
+
+.toast-leave-active {
+    animation: toast .3s ease reverse;
+}
+
+@keyframes toast {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 </style>

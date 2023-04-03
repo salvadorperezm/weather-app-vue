@@ -19,16 +19,23 @@
                 </div>
             </div>
         </section>
+        <transition name="toast">
+            <base-toast v-if="isToastOpen" @close-modal="isToastOpen = false" :title="'Error.'"
+                :description="'Verify your internet connection or try again later.'" :type="'error'"
+                :duration="'4000'"></base-toast>
+        </transition>
     </div>
 </template>
 
 <script>
 import axios from 'axios'
 
+import BaseToast from '../components/BaseToast.vue'
 import TheSpinner from '../components/TheSpinner.vue'
 
 export default {
     components: {
+        BaseToast,
         TheSpinner
     },
     created() {
@@ -41,7 +48,8 @@ export default {
             appSettings: null,
             isDataFetching: false,
             unitOfMeasure: null,
-            information: null
+            information: null,
+            isToastOpen: false
         }
     },
     methods: {
@@ -56,8 +64,8 @@ export default {
                 localStorage.setItem('weather-app-data', JSON.stringify({ ...response.data, lastUpdated: new Date() }))
                 this.isDataFetching = false
             } catch (error) {
-                console.warn(error)
                 this.isDataFetching = false
+                this.isToastOpen = true
             }
         }
     }
@@ -114,5 +122,23 @@ export default {
     display: flex;
     justify-content: center;
     padding-block: 16px;
+}
+
+.toast-enter-active {
+    animation: toast .3s ease;
+}
+
+.toast-leave-active {
+    animation: toast .3s ease reverse;
+}
+
+@keyframes toast {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 </style>

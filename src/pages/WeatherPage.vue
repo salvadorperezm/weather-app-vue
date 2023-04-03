@@ -75,6 +75,11 @@
         <transition name="modal">
             <base-modal v-if="isModalOpen" @close-modal="toggleModal" @refetch-data="updatePage"></base-modal>
         </transition>
+        <transition name="modal">
+            <base-toast v-if="isToastOpen" @close-modal="isToastOpen = false" :title="'Error.'"
+                :description="'Verify your internet connection or try again later.'" :type="'error'"
+                :duration="'4000'"></base-toast>
+        </transition>
     </section>
 </template>
 
@@ -82,10 +87,12 @@
 import axios from 'axios'
 
 import BaseModal from '../components/BaseModal.vue'
+import BaseToast from '../components/BaseToast.vue'
 
 export default {
     components: {
-        BaseModal
+        BaseModal,
+        BaseToast
     },
     created() {
         this.information = JSON.parse(localStorage.getItem('weather-app-data'))
@@ -106,7 +113,8 @@ export default {
             isModalOpen: false,
             isDataRefetching: false,
             screenWidth: 0,
-            lastUpdated: ''
+            lastUpdated: '',
+            isToastOpen: false
         }
     },
     methods: {
@@ -153,8 +161,8 @@ export default {
                 this.information = JSON.parse(localStorage.getItem('weather-app-data'))
                 this.checkLastUpdated()
             } catch (error) {
-                console.warn(error)
                 this.isDataRefetching = false
+                this.isToastOpen = true
             }
         },
         onScreenResize() {

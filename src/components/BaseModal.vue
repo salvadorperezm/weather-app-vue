@@ -22,9 +22,8 @@
             </div>
         </section>
         <transition name="toast" mode="out-in">
-            <base-toast v-if="isToastOpen" @close-modal="isToastOpen = false" :title="'Error.'"
-                :description="'Verify your internet connection or try again later.'" :type="'error'"
-                :duration="'4000'"></base-toast>
+            <base-toast v-if="isToastOpen" @close-modal="handleCloseToast" :title="'Error.'" :description="errorMessage"
+                :type="'error'" :duration="'4000'"></base-toast>
         </transition>
     </div>
 </template>
@@ -54,7 +53,8 @@ export default {
             location: null,
             results: [],
             appSettings: null,
-            isToastOpen: false
+            isToastOpen: false,
+            errorMessage: null
         }
     },
     methods: {
@@ -75,6 +75,7 @@ export default {
                 }
                 this.isSpinnerLoading = false;
             } catch (error) {
+                this.errorMessage = 'Verify your internet location or try again later.'
                 this.isSpinnerLoading = false
                 this.isToastOpen = true
             }
@@ -90,6 +91,7 @@ export default {
                 this.$emit('refetch-data')
                 this.$router.push('/weather-app-vue/weather')
             } catch (error) {
+                this.errorMessage = 'Verify your internet location or try again later.'
                 this.isSpinnerLoading = false
                 this.isToastOpen = true
             }
@@ -105,9 +107,14 @@ export default {
                 this.isSpinnerLoading = false
                 this.chooseLocation(result)
             } catch (error) {
+                this.errorMessage = 'Verify your internet connection or allow all GPS permissions.'
                 this.isSpinnerLoading = false
                 this.isToastOpen = true
             }
+        },
+        handleCloseToast() {
+            this.errorMessage = null
+            this.isToastOpen = false
         }
     }
 }

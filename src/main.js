@@ -8,6 +8,7 @@ import {
   faLocationDot,
   faRotate,
   faCircleExclamation,
+  faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
 import { createApp } from "vue";
@@ -66,7 +67,8 @@ library.add(
   faLocationCrosshairs,
   faLocationDot,
   faRotate,
-  faCircleExclamation
+  faCircleExclamation,
+  faXmark
 );
 
 app.component("base-button", BaseButton);

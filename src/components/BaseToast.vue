@@ -1,10 +1,16 @@
 <template>
     <div class="toast__container">
         <div :class="['toast', type]">
-            <font-awesome-icon :icon="'fa-solid fa-circle-exclamation'" class="toast__icon"></font-awesome-icon>
-            <div class="toast__text">
-                <h3 class="toast__title">{{ title }}</h3>
-                <p class="toast__description">{{ description }}</p>
+            <div class="toast__header">
+                <font-awesome-icon :icon="'fa-solid fa-xmark'" class="toast__close"
+                    @click="$emit('close-modal')"></font-awesome-icon>
+            </div>
+            <div class="toast__body">
+                <font-awesome-icon :icon="'fa-solid fa-circle-exclamation'" class="toast__icon"></font-awesome-icon>
+                <div class="toast__text">
+                    <h3 class="toast__title">{{ title }}</h3>
+                    <p class="toast__description">{{ description }}</p>
+                </div>
             </div>
         </div>
     </div>
@@ -41,10 +47,24 @@ export default {
     flex: 1;
     padding: 16px;
     border-radius: 8px;
-    display: flex;
-    align-items: center;
     max-width: 400px;
     margin-inline: 16px;
+}
+
+.toast__body {
+    display: flex;
+    align-items: center;
+}
+
+.toast__header {
+    padding-block-end: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.toast__close {
+    cursor: pointer;
 }
 
 .toast__icon {
